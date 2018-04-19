@@ -8,6 +8,89 @@ setwd(mutwd)
 intermediatefilename <- 'mergeddata.csv'
 finalfilename <- 'concisedatatable.csv'
 
+# # Reading raw mutation data file
+# datamutation <- read.table('data_mutations_uniprot_revised.txt',sep = '\t',fill = TRUE,stringsAsFactors = FALSE,header = TRUE)
+# 
+# # Converting raw data into data.table type
+# datamutation <- data.table(datamutation)
+# 
+# # Delete certain useless columns with no content
+# deletecol <- c()
+# colnamemut <- colnames(datamutation)
+# for(i in ncol(datamutation):1){
+#   if(nrow(datamutation[is.na(get(colnamemut[i]))]) == nrow(datamutation)){
+#     deletecol <- c(deletecol,colnamemut[i])
+#   }
+# }
+# print(deletecol)
+# datamutation <- datamutation[,(deletecol) := NULL]
+# 
+# # Append sample information
+# # Read Sample Information
+# datasampleinfo <- read.table('data_clinical_sample.txt',sep = '\t',fill = TRUE,stringsAsFactors = FALSE,header = TRUE)
+# datasampleinfo <- data.table(datasampleinfo)
+# 
+# #Merging data
+# # set the ON clause as keys of the tables:
+# setkey(datamutation,Tumor_Sample_Barcode)
+# setkey(datasampleinfo,SAMPLE_ID)
+# # perform the right outer join using the merge function
+# mergeddata <- datamutation[datasampleinfo,nomatch = 0]
+# 
+# # To case list information folder
+# clwd <- paste0(mutwd,'/case_lists')
+# setwd(clwd)
+# 
+# # Get all cancer type information
+# cancerlists <- list.files()
+# cancerlists <- cancerlists[which(grepl('.txt',cancerlists))]
+# IDdf = data.frame(matrix(ncol = 2,nrow =0))
+# colnames(IDdf) <- c('Cancer Type','IDs')
+# for(i in 1:length(cancerlists)){
+#   # Get the file as string
+#   tmpstring = readChar(cancerlists[i], file.info(cancerlists[i])$size)
+#   # get the substring stating with Cancer type name
+#   tmpstring = substr(tmpstring,regexpr('Tumor Type',tmpstring)[1]+12,nchar(tmpstring))
+#   # get the substring of cancer type (name end with '\r')
+#   tmpcancertype = substr(tmpstring,1,regexpr('\\r',tmpstring)[1]-1)
+#   # get the substring of cancer IDs
+#   tmpIDstring = substr(tmpstring,regexpr('case_list_ids',tmpstring)[1]+15,nchar(tmpstring))
+#   tmpIDvector = strsplit(tmpIDstring,split = '\t')[[1]]
+#   # Create data frame
+#   tmpIDdf <- data.frame('Cancer Type' = rep(tmpcancertype,length(tmpIDvector)),'IDs' = tmpIDvector)
+#   IDdf <- rbind(IDdf,tmpIDdf)
+# }
+# 
+# IDdf$Cancer.Type <- as.character(IDdf$Cancer.Type)
+# IDdf$IDs <- as.character(IDdf$IDs)
+# IDdf <- data.table(IDdf)
+# #View(table(IDdf$IDs)) # Every patientID correspond to one cancer type
+# 
+# # Back to mutation data
+# setwd(mutwd)
+# 
+# # Enter all the Cancer Type info into the table by patient IDs
+# mergeddata$CancerType = rep('',nrow(mergeddata))
+# for(i in 1:nrow(mergeddata)){
+#   if(i %% 50 == 0){
+#     print(i)
+#   }
+#   mergeddata$CancerType[i] = IDdf[IDs == mergeddata$Tumor_Sample_Barcode[i]]$Cancer.Type
+# }
+# 
+# # Found that one of the patients with Mastoccytosis does not have any mutations
+# #mergect <- unique(mergeddata$CancerType)
+# #orict <- unique(IDdf$Cancer.Type)
+# #for(i in 1:length(orict)){
+# #  if(!(orict[i] %in% mergect)){
+# #    print(orict[i])
+# #  }
+# #}
+# #mastocytosisptID <- IDdf[Cancer.Type == 'Mastocytosis']
+# #print(mergeddata[Tumor_Sample_Barcode == 'P-0003114-T01-IM5'])
+# 
+# write.csv(mergeddata,file = intermediatefilename,row.names = FALSE)
+
 mergeddatact <- read.csv(intermediatefilename,stringsAsFactors = FALSE, header = TRUE)
 mergeddatact <- data.table(mergeddatact)
 # Cleaning up data
@@ -176,5 +259,5 @@ for(i in 1:nrow(finaldt)){
   }
 }
 
-#write.csv(finaldt,file = finalfilename,row.names = FALSE)
+write.csv(finaldt,file = finalfilename,row.names = FALSE)
 
